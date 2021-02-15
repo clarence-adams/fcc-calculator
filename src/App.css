@@ -15,10 +15,13 @@ button {
 #calculator {
   background-color: lightgrey;
   border: solid 5px black;
+  width: 200px;
 }
 #display {
+  min-height: 1.5em;
   background-color: black;
   color: green;
+  text-align: right;
 }
 #clear {
   background-color: red;
