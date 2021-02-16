@@ -1,4 +1,4 @@
-# FCC Drum machine
+# FCC Calculator
 
 This is a project for freecodecamp.org.
 
