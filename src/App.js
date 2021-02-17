@@ -3,46 +3,36 @@ import {evaluate} from 'mathjs'
 import './App.css';
 
 function App() {
+  // state that will contain the current input that the user enters until either
+  // = or AC is pressed
   const [currentInput, setCurrentInput] = useState(["0"])
+  // state that contains the previous input the user entered so we can perform
+  // further calculations on it if needed
   const [previousInput, setPreviousInput] = useState([""])
+  // state that contains a boolean stating whether or not the button the user is
+  // pressing is the first in a new input sequence
   const [isFirstInput, setIsFirstInput] = useState(true)
-
-  const numbers = [{"zero": "0"}, {"one": "1"}, {"two": "2"}, {"three": "3"},
-  {"four": "4"}, {"five": "5"}, {"six": "6"}, {"seven": "7"}, {"eight": "8"},
-  {"nine": "9"}, {"decimal": "."}]
-
-  const operators = [{"add": "+"}, {"subtract": "-"}, {"multiply": "*"},
-  {"divide": "/"}]
-
-  const controls = [{"clear": "AC"}, {"equals": "="}]
+  // array of objects that countains the info needed to create buttons in the
+  // order that they should be rendered
+  const buttons = [{"clear": "AC"}, {"divide": "/"}, {"multiply": "*"},
+  {"seven": "7"}, {"eight": "8"}, {"nine": "9"}, {"subtract": "-"},
+  {"four": "4"}, {"five": "5"}, {"six": "6"}, {"add": "+"}, {"one": "1"},
+  {"two": "2"}, {"three": "3"}, {"zero": "0"}, {"decimal": "."},
+  {"equals": "="}]
 
   return (
     <div id="calculator">
-      <div id="display">{currentInput}</div>
-      <div id="controls">
-        {controls.map((element, index) =>
+      <div id="display-wrapper">
+        <div id="display-previous">{previousInput}</div>
+        <div id="display">{currentInput}</div>
+      </div>
+      <div id="buttons">
+        {buttons.map((element, index) =>
           <CalcButton key={index} buttonId={Object.keys(element)}
           buttonDisplay={Object.values(element)} currentInput={currentInput}
           setCurrentInput={setCurrentInput} previousInput={previousInput}
           setPreviousInput={setPreviousInput} isFirstInput={isFirstInput}
           setIsFirstInput={setIsFirstInput}/>
-        )}
-      </div>
-      <div id="numbers">
-        {numbers.map((element, index) =>
-          <CalcButton key={index} buttonId={Object.keys(element)}
-          buttonDisplay={Object.values(element)} currentInput={currentInput}
-          setCurrentInput={setCurrentInput} isFirstInput={isFirstInput}
-          setIsFirstInput={setIsFirstInput}/>
-        )}
-      </div>
-      <div id="operators">
-        {operators.map((element, index) =>
-          <CalcButton key={index} buttonId={Object.keys(element)}
-          buttonDisplay={Object.values(element)} currentInput={currentInput}
-          setCurrentInput={setCurrentInput} isFirstInput={isFirstInput}
-          setIsFirstInput={setIsFirstInput} previousInput={previousInput}
-          setPreviousInput={setPreviousInput}/>
         )}
       </div>
     </div>
@@ -74,50 +64,65 @@ function CalcButton(props) {
     return (isOperator(previousChar) && currentChar !== "-") ? false
     : true
   }
+  // helper function that returns a new input array if operation is !possible
+  const newInputArray = (value) => {
+    let newArr = props.currentInput
+    newArr[newArr.length - 1] = value
+    if (isOperationPossible(newArr[newArr.length - 1], newArr[newArr.length - 2])) {
+      return newArr
+    } else {
+      newArr.splice(-2, 1)
+      return newArr
+    }
+  }
   // helper function that uses the mathjs library to handle string evaluation
   const calculatorLogic = (arr) => {
     let newArr = arr.join("")
     return evaluate(newArr)
   }
-  // function that handles button clicks
-  const clickHandler = (event) => {
-    if (event.target.value === "AC") {
+  // decision tree
+  const decisionTree = (value) => {
+    if (value === "AC") {
       props.setCurrentInput(["0"])
       props.setIsFirstInput(true)
-    } else if (event.target.value === "=") {
-      props.setCurrentInput(calculatorLogic(props.currentInput))
+    } else if (value === "=") {
+      let answer = calculatorLogic(props.currentInput)
+      props.setCurrentInput(answer)
       props.setIsFirstInput(true)
       // sets previous input as an array so we can concat in the future if
       // we need to
-      props.setPreviousInput([calculatorLogic(props.currentInput)])
+      props.setPreviousInput([answer])
     } else if (props.isFirstInput) {
-      if (event.target.value === "0") {
+      if (value === "0") {
         //
-      } else if (isOperator(event.target.value)) {
-        props.setCurrentInput(props.previousInput.concat([event.target.value]))
+      } else if (isOperator(value)) {
+        props.setCurrentInput(props.previousInput.concat([value]))
         props.setIsFirstInput(false)
       } else {
-        props.setCurrentInput([event.target.value])
+        props.setCurrentInput([value])
+        props.setPreviousInput([""])
         props.setIsFirstInput(false)
       }
-    } else if (event.target.value === "."
+    } else if (value === "."
     && isDecimalPresent(props.currentInput, props.currentInput.length - 1)) {
       //
-    } else if (isOperator(event.target.value) && !isOperationPossible(event.target.value, props.currentInput[props.currentInput.length - 1])) {
-        props.setCurrentInput(() => {
-          let newArr = props.currentInput
-          newArr[newArr.length - 1] = event.target.value
-          if (isOperationPossible(newArr[newArr.length - 1], newArr[newArr.length - 2])) {
-            return newArr
-          } else {
-            newArr.splice(-1, 1)
-            return newArr
-          }
-        })
+    } else if (isOperator(value) && !isOperationPossible(value, props.currentInput[props.currentInput.length - 1])) {
+        let newArray = newInputArray(value)
+        props.setCurrentInput(newArray)
     } else {
-        props.setCurrentInput(props.currentInput.concat([event.target.value]))
-      }
+        props.setCurrentInput(props.currentInput.concat([value]))
     }
+  }
+  // event listener that handles keypresses
+  window.addEventListener('keydown', (event) => {
+    console.log(event.key)
+    // console.log(props.value)
+    // decisionTree(event.key)
+  })
+  // function that handles button clicks
+  const clickHandler = (event) => {
+    decisionTree(event.target.value)
+  }
 
   return (
     <button id={props.buttonId} class="calcButton" value={props.buttonDisplay}
