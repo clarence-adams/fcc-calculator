@@ -1,3 +1,7 @@
+@font-face {
+  font-family: 'calcFont';
+  src: url(./fonts/calculator.ttf);
+}
 body {
   height: 100vh;
   display: flex;
@@ -29,18 +33,31 @@ button:hover {
   width: 300px;
 }
 #display-wrapper {
+  min-height: 100px;
+  flex-wrap: wrap;
+  display: flex;
   background-color: black;
-  text-align: right;
 }
 #display-previous {
+  flex-basis: 100%;
+  text-align: right;
+  font-family: calcFont;
   color: white;
-  font-size: 16px;
-  min-height: 1.5em;
+  font-size: 24px;
+  direction: rtl;
+  overflow: hidden;
+  white-space: nowrap;
 }
 #display {
+  flex-basis: 100%;
+  max-width: 100%;
+  text-align: right;
+  font-family: calcFont;
   color: green;
-  font-size: 32px;
-  min-height: 1.5em;
+  font-size: 48px;
+  direction: rtl;
+  overflow: hidden;
+  white-space: nowrap;
 }
 #buttons {
   display: flex;

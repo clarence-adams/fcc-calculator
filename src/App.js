@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useState, useEffect, useCallback} from 'react'
 import {evaluate} from 'mathjs'
 import './App.css';
 
@@ -59,12 +59,12 @@ function CalcButton(props) {
     }
   }
   // helper function that returns true if the previous char in currentInput
-  // state does not conflict with the char being entered
+  // state does not conflict with the operator being entered
   const isOperationPossible = (currentChar, previousChar) => {
     return (isOperator(previousChar) && currentChar !== "-") ? false
     : true
   }
-  // helper function that returns a new input array if operation is !possible
+  // helper function that returns a new input array if operation is not possible
   const newInputArray = (value) => {
     let newArr = props.currentInput
     newArr[newArr.length - 1] = value
@@ -75,27 +75,49 @@ function CalcButton(props) {
       return newArr
     }
   }
+  // helper function that determines whether the input value passed is valid
+  const valueCheck = (value) => {
+    let validValues = ['AC', '=', 'Enter', 'Delete', '0', '1', '2', '3', '4',
+    '5', '6', '7', '8', '9', '0', '.', '+', '-', '*', '/']
+
+    if (!validValues.includes(value)) {
+      return false
+    } else {
+      return true
+    }
+  }
   // helper function that uses the mathjs library to handle string evaluation
   const calculatorLogic = (arr) => {
     let newArr = arr.join("")
     return evaluate(newArr)
   }
-  // decision tree
+  // decision tree when key is pressed or button is pushed
   const decisionTree = (value) => {
-    if (value === "AC") {
+    let previousValue = props.currentInput[props.currentInput.length - 1];
+
+    if (!valueCheck(value)) {
+      // ensures value is a valid input
+      return
+    } else if (props.isFirstInput && value === "0") {
+      // ensures number does not start with a 0
+      return
+    } else if (value === "."
+    && isDecimalPresent(props.currentInput, props.currentInput.length - 1)) {
+      // ensures two decimals are not placed in the same number
+      return
+    } else if (value === "AC" || value === "Delete") {
       props.setCurrentInput(["0"])
       props.setIsFirstInput(true)
-    } else if (value === "=") {
+    } else if (value === "=" || value === "Enter") {
       let answer = calculatorLogic(props.currentInput)
       props.setCurrentInput(answer)
       props.setIsFirstInput(true)
-      // sets previous input as an array so we can concat in the future if
-      // we need to
+      // sets previous input as an array so we can concat in the future
       props.setPreviousInput([answer])
     } else if (props.isFirstInput) {
-      if (value === "0") {
-        //
-      } else if (isOperator(value)) {
+      if (isOperator(value)) {
+        // if the first input is an operator, concat the previous answer with
+        // the current input and continue to do calculations on it
         props.setCurrentInput(props.previousInput.concat([value]))
         props.setIsFirstInput(false)
       } else {
@@ -103,29 +125,34 @@ function CalcButton(props) {
         props.setPreviousInput([""])
         props.setIsFirstInput(false)
       }
-    } else if (value === "."
-    && isDecimalPresent(props.currentInput, props.currentInput.length - 1)) {
-      //
-    } else if (isOperator(value) && !isOperationPossible(value, props.currentInput[props.currentInput.length - 1])) {
+    } else if (isOperator(value) && !isOperationPossible(value, previousValue)) {
+      // if the value being entered is an operator and the operation is not
+      // possible, use the newInputArray helper function to determine what the
+      // new input should be
         let newArray = newInputArray(value)
         props.setCurrentInput(newArray)
     } else {
         props.setCurrentInput(props.currentInput.concat([value]))
     }
   }
-  // event listener that handles keypresses
-  window.addEventListener('keydown', (event) => {
-    console.log(event.key)
-    // console.log(props.value)
-    // decisionTree(event.key)
+  // function that handles key presses
+  const keyHandler = useCallback((event) => {
+    decisionTree(event.key)
+  })
+  // event listener that listens for key presses
+  useEffect(() => {
+    window.addEventListener('keydown', keyHandler)
+
+    return () => {
+      window.removeEventListener('keydown', keyHandler)
+    }
   })
   // function that handles button clicks
   const clickHandler = (event) => {
     decisionTree(event.target.value)
   }
-
   return (
-    <button id={props.buttonId} class="calcButton" value={props.buttonDisplay}
+    <button id={props.buttonId} className="calcButton" value={props.buttonDisplay}
     onClick={clickHandler}>{props.buttonDisplay}</button>
   )
 }
