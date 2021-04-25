@@ -44,7 +44,6 @@ button:hover {
   font-family: calcFont;
   color: white;
   font-size: 24px;
-  direction: rtl;
   overflow: hidden;
   white-space: nowrap;
 }
@@ -55,7 +54,6 @@ button:hover {
   font-family: calcFont;
   color: green;
   font-size: 48px;
-  direction: rtl;
   overflow: hidden;
   white-space: nowrap;
 }

@@ -109,11 +109,16 @@ function CalcButton(props) {
       props.setCurrentInput(["0"])
       props.setIsFirstInput(true)
     } else if (value === "=" || value === "Enter") {
-      let answer = calculatorLogic(props.currentInput)
-      props.setCurrentInput(answer)
-      props.setIsFirstInput(true)
-      // sets previous input as an array so we can concat in the future
-      props.setPreviousInput([answer])
+      // if previous input is an operator, does nothing
+      if (isOperator(previousValue)) {
+        return
+      } else {
+        let answer = calculatorLogic(props.currentInput)
+        props.setCurrentInput(answer)
+        props.setIsFirstInput(true)
+        // sets previous input as an array so we can concat in the future
+        props.setPreviousInput([answer])
+      }
     } else if (props.isFirstInput) {
       if (isOperator(value)) {
         // if the first input is an operator, concat the previous answer with
